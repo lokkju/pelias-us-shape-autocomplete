@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Using Who’s on First to display a region boundary.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+
+    <!-- Load Leaflet from CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
+
+    <!-- Load Pelias geocoding plugin after Leaflet -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-geocoder-mapzen/1.9.4/leaflet-geocoder-mapzen.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-geocoder-mapzen/1.9.4/leaflet-geocoder-mapzen.min.js"></script>
+
+    <style>
+        html, body {
+            overflow: hidden;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .no-webgl-message {
+            display: none;
+        }
+
+        html.no-webgl .no-webgl-message{
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 1001; /* Ensures visibility in IE8 */
+            padding: 10px;
+            font-family: sans-serif;
+            background-color: lightyellow;
+            border-bottom: 1px solid gold;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    // Create a basic Leaflet map
+    var map = L.map('map').setView([40.7259, -73.9805], 12);
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+    }).addTo(map);
+
+    // Add geocoding plugin
+    L.Control.Geocoder.handlePlaceResponse = displayFeatureBoundaries;
+
+    var geocoder = L.control.geocoder('', {
+        url: 'http://' + window.location.hostname + ':4000/v1',
+        expanded: true, // Shows "instructions" in input placeholder
+        markers: false, // We'll add GeoJSON from WOF manually
+        placeholder: 'Region boundary example',
+        place: true,
+        params: {
+            layers: 'coarse', // Limit to sources most likely to have boundaries
+            sources: 'whosonfirst' // Limit to WOF so we have an ID for it
+        }
+    });
+    geocoder.addTo(map);
+
+    // Add event listeners
+    geocoder.on('results', displayFeatureBoundaries);
+    geocoder.on('reset', clearBoundaries);
+    geocoder.on('shape', displayFeatureBoundaries)
+    // Boundary cache
+    var boundaries = []
+
+    function displayFeatureBoundaries(event) {
+        // Remove previous boundaries
+        clearBoundaries();
+        var boundary = L.geoJSON(event.results).addTo(map);
+        boundaries.push(boundary)
+    }
+
+    function clearBoundaries() {
+        for (var i = 0; i < boundaries.length; i++) {
+            boundaries[i].removeFrom(map);
+        }
+        boundaries = [];
+    }
+
+    // Converts a WOF `source_id`, like `101714287`
+    // into a WOF url e.g. `https://whosonfirst.mapzen.com/data/101/714/287/101714287.geojson`
+    function getWOFDataEndpoint (wofId) {
+        var wofEndpointRoot = 'https://whosonfirst.mapzen.com/data/';
+        return wofEndpointRoot + wofId.substr(0, 3) + '/' +
+            wofId.substr(3, 3) + '/' + wofId.substr(6) + '/' + wofId + '.geojson';
+    }
+
+    // Very basic XMLHttpRequest 'GET'. No error handling.
+    function XHRGet(path, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var data = JSON.parse(xhr.responseText);
+                callback(data);
+            }
+        }
+        xhr.open('GET', path);
+        xhr.send();
+    }
+</script>
+</body>
+</html>

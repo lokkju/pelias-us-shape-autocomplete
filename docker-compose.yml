@@ -1,0 +1,107 @@
+version: '3'
+networks:
+  default:
+    driver: bridge
+services:
+  demo:
+    image: joseluisq/static-web-server:2
+    container_name: pelias_demo
+    user: "${DOCKER_USER}"
+    restart: always
+    ports: [ "0.0.0.0:4080:80"]
+    volumes:
+      - ./public_http:/public
+  libpostal:
+    image: pelias/libpostal-service
+    container_name: pelias_libpostal
+    user: "${DOCKER_USER}"
+    restart: always
+    ports: [ "127.0.0.1:4400:4400" ]
+  schema:
+    build: ./pelias-schema
+    image: pelias/schema:master
+    container_name: pelias_schema
+    user: "${DOCKER_USER}"
+    volumes:
+      - "./pelias.json:/code/pelias.json"
+  api:
+    build: ./pelias-api
+    image: pelias/api:master
+    container_name: pelias_api
+    user: "${DOCKER_USER}"
+    restart: always
+    environment: [ "PORT=4000" ]
+    ports: [ "0.0.0.0:4000:4000" ]
+    volumes:
+      - "./pelias.json:/code/pelias.json"
+  placeholder:
+    image: pelias/placeholder:master
+    container_name: pelias_placeholder
+    user: "${DOCKER_USER}"
+    restart: always
+    environment: [ "PORT=4100" ]
+    ports: [ "0.0.0.0:4100:4100" ]
+    volumes:
+      - "./pelias.json:/code/pelias.json"
+      - "${DATA_DIR}:/data"
+      - "./blacklist/:/data/blacklist"
+  whosonfirst:
+    build: ./pelias-whosonfirst
+    image: pelias/whosonfirst:master
+    container_name: pelias_whosonfirst
+    user: "${DOCKER_USER}"
+    volumes:
+      - "./pelias.json:/code/pelias.json"
+      - "${DATA_DIR}:/data"
+      - "./blacklist/:/data/blacklist"
+  csv-importer:
+    image: pelias/csv-importer:master
+    container_name: pelias_csv_importer
+    user: "${DOCKER_USER}"
+    volumes:
+      - "./pelias.json:/code/pelias.json"
+      - "${DATA_DIR}:/data"
+      - "./blacklist/:/data/blacklist"
+  polylines:
+    image: pelias/polylines:master
+    container_name: pelias_polylines
+    user: "${DOCKER_USER}"
+    volumes:
+      - "./pelias.json:/code/pelias.json"
+      - "${DATA_DIR}:/data"
+  pip:
+    image: pelias/pip-service:master
+    container_name: pelias_pip-service
+    user: "${DOCKER_USER}"
+    restart: always
+    environment: [ "PORT=4200" ]
+    ports: [ "127.0.0.1:4200:4200" ]
+    volumes:
+      - "./pelias.json:/code/pelias.json"
+      - "${DATA_DIR}:/data"
+  elasticsearch:
+    image: pelias/elasticsearch:7.16.1
+    container_name: pelias_elasticsearch
+    user: "${DOCKER_USER}"
+    restart: always
+    environment: [ "ES_JAVA_OPTS=-Xmx8g" ]
+    ports: [ "0.0.0.0:9200:9200", "0.0.0.0:9300:9300" ]
+    volumes:
+      - "${DATA_DIR}/elasticsearch:/usr/share/elasticsearch/data"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add: [ "IPC_LOCK" ]
+  fuzzy-tester:
+    image: pelias/fuzzy-tester:master
+    container_name: pelias_fuzzy_tester
+    user: "${DOCKER_USER}"
+    restart: "no"
+    command: "--help"
+    volumes:
+      - "./pelias.json:/code/pelias.json"
+      - "./test_cases:/code/pelias/fuzzy-tester/test_cases"
