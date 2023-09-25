@@ -58,7 +58,7 @@
     L.Control.Geocoder.handlePlaceResponse = displayFeatureBoundaries;
 
     var geocoder = L.control.geocoder('', {
-        url: 'http://' + window.location.hostname + ':4000/v1',
+        url: '/v1',
         expanded: true, // Shows "instructions" in input placeholder
         markers: false, // We'll add GeoJSON from WOF manually
         placeholder: 'Region boundary example',

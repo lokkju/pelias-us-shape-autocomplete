@@ -1,0 +1,13 @@
+
+[entryPoints]
+    [entryPoints.web]
+        address = ":4000"
+
+[api]
+    dashboard = true
+    insecure = true
+
+[providers.docker]
+    watch = true
+    network = "pelias"
+    exposedByDefault = false

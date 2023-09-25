@@ -1,16 +1,31 @@
-version: '3'
+version: '3.4'
 networks:
   default:
     driver: bridge
 services:
+  traefik:
+    image: 'traefik:2.3'
+    container_name: 'pelias_traefik'
+    restart: 'unless-stopped'
+    ports:
+      - '4000:4000'
+      - '8080:8080'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - './traefik.toml:/traefik.toml'
+
   demo:
     image: joseluisq/static-web-server:2
     container_name: pelias_demo
     user: "${DOCKER_USER}"
     restart: always
-    ports: [ "0.0.0.0:4080:80"]
     volumes:
       - ./public_http:/public
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.demo.rule=PathPrefix(`/index.html`)'
+      - 'traefik.http.services.demo.loadbalancer.server.port=80'
+
   libpostal:
     image: pelias/libpostal-service
     container_name: pelias_libpostal
@@ -31,9 +46,13 @@ services:
     user: "${DOCKER_USER}"
     restart: always
     environment: [ "PORT=4000" ]
-    ports: [ "0.0.0.0:4000:4000" ]
     volumes:
       - "./pelias.json:/code/pelias.json"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.api.rule=PathPrefix(`/v1{regex:$$|/.*}`)'
+      - 'traefik.http.services.api.loadbalancer.server.port=4000'
+
   placeholder:
     image: pelias/placeholder:master
     container_name: pelias_placeholder
