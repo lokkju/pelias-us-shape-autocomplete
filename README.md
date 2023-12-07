@@ -30,6 +30,15 @@ just data-restore
 # bring up the required images
 just docker-up
 ```
+
+## K8s Deployment
+If deploying to K8s or for other run-times, only the following services need to be deployed:
+- pelias_elasticsearch
+- pelias_placeholder
+- pelias_pip-service
+- pelias_api
+- pelias_libpostal
+
 # Development and data building
 
 The minimum configuration required in order to run this project are [installing prerequisites](https://github.com/pelias/docker#prerequisites), [install the pelias command](https://github.com/pelias/docker#installing-the-pelias-command) and [configure the environment](https://github.com/pelias/docker#configure-environment).
