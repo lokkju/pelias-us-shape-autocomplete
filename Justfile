@@ -6,6 +6,7 @@ export ORG := "lokkju"
 
 data_dir := env_var('DATA_DIR')
 s3_data_dir := env_var('S3_DATA_DIR')
+aws_profile := env_var('AWS_PROFILE')
 
 # default recipe to display help information
 default:
@@ -72,11 +73,11 @@ build:
 
 # Backup pelias data to S3
 data-backup:
-	[ -d $DATA_DIR ] && s5cmd --profile=beewo sync --size-only $DATA_DIR $S3_DATA_DIR
+	[ -d $DATA_DIR ] && s5cmd --profile=$AWS_PROFILE sync --size-only $DATA_DIR $S3_DATA_DIR
 
 # Restore pelias data from S3
 data-restore:
-	s5cmd --profile=beewo sync --size-only $S3_DATA_DIR* $DATA_DIR
+	s5cmd --profile=$AWS_PROFILE sync --size-only $S3_DATA_DIR* $DATA_DIR
 
 docker-up:
 	docker compose up -d

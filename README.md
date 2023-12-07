@@ -19,6 +19,7 @@ ensure you have a local `.env` file as below. It is important that paths end in 
 COMPOSE_PROJECT_NAME=pelias
 DATA_DIR=/data/pelias/united-states/
 S3_DATA_DIR=s3://your-bucket/pelias-data/2023-12-07/
+AWS_PROFILE=default
 ```
 
 Then
