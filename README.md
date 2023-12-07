@@ -10,9 +10,26 @@ Running an interpolation build of this side would also take many days
 
 Additionally, it requires a polylines file generated with [Valhalla](https://github.com/valhalla).
 
-# Setup
+## Tools
+You must have docker and just installed prior to running this project
 
-Please refer to the instructions at https://github.com/pelias/docker in order to install and configure your docker environment.
+# Deploy
+ensure you have a local `.env` file as below. It is important that paths end in a slash
+```
+COMPOSE_PROJECT_NAME=pelias
+DATA_DIR=/data/pelias/united-states/
+S3_DATA_DIR=s3://your-bucket/pelias-data/2023-12-07/
+```
+
+Then
+
+```bash
+# sync the pre-built pelias data archive
+just data-restore
+# bring up the required images
+just docker-up
+```
+# Development and data building
 
 The minimum configuration required in order to run this project are [installing prerequisites](https://github.com/pelias/docker#prerequisites), [install the pelias command](https://github.com/pelias/docker#installing-the-pelias-command) and [configure the environment](https://github.com/pelias/docker#configure-environment).
 
@@ -20,7 +37,7 @@ This build also requires [obtaining or generating a polylines file from Valhalla
 
 Please ensure that's all working fine before continuing.
 
-# Run a Build
+## Run a Build
 
 To run a complete build, execute the following commands:
 
@@ -35,6 +52,11 @@ pelias prepare placeholder
 pelias import all
 pelias compose up
 pelias test run
+```
+
+## Push custom place support docker images to hub
+```bash
+just build
 ```
 
 # Make an Example Query

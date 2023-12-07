@@ -33,15 +33,13 @@ services:
     restart: always
     ports: [ "127.0.0.1:4400:4400" ]
   schema:
-    build: https://github.com/lokkju/pelias-schema.git#shape_support
-    image: pelias/schema:master
+    image: lokkju/pelias-schema:shape_support
     container_name: pelias_schema
     user: "${DOCKER_USER}"
     volumes:
       - "./pelias.json:/code/pelias.json"
   api:
-    build: https://github.com/lokkju/pelias-api.git#shape_support
-    image: pelias/api:master
+    image: lokkju/pelias-api:shape_support
     container_name: pelias_api
     user: "${DOCKER_USER}"
     restart: always
@@ -65,8 +63,7 @@ services:
       - "${DATA_DIR}:/data"
       - "./blacklist/:/data/blacklist"
   whosonfirst:
-    build: https://github.com/lokkju/pelias-whosonfirst.git#shape_support
-    image: pelias/whosonfirst:master
+    image: lokkju/pelias-whosonfirst:shape_support
     container_name: pelias_whosonfirst
     user: "${DOCKER_USER}"
     volumes:
